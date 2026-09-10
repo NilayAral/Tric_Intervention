@@ -7,11 +7,12 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap">
     <style>
         :root {
-            --color-pink: #FF6B9D;
-            --color-blue: #4A90E2;
+            --color-tric-blue: #0052CC;
+            --color-tric-orange: #FF8C00;
+            --color-blue: #0052CC;
+            --color-orange: #FF8C00;
             --color-purple: #B388EB;
             --color-green: #7ED321;
-            --color-orange: #FF9500;
             --color-teal: #00BFA5;
             --color-coral: #FF6B6B;
             --color-indigo: #5C6BC0;
@@ -54,12 +55,27 @@
 
         .header h1 {
             font-family: 'Poppins', sans-serif;
-            font-size: 2em;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--color-pink), var(--color-blue), var(--color-purple));
+            font-size: 2.2em;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--color-tric-blue), var(--color-tric-orange));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            font-weight: 700;
+        }
+
+        .header .logo-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header .logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
         }
 
         .header p {
@@ -88,8 +104,9 @@
         }
 
         .tab-btn.active {
-            color: var(--text-dark);
-            border-bottom-color: var(--color-blue);
+            color: var(--color-tric-blue);
+            border-bottom-color: var(--color-tric-blue);
+            font-weight: 700;
         }
 
         .tab-content {
@@ -117,12 +134,13 @@
 
         .intervention-header {
             padding: 16px 20px;
-            background: linear-gradient(135deg, rgba(74,144,226,0.1), rgba(179,136,235,0.1));
+            background: linear-gradient(135deg, rgba(0,82,204,0.08), rgba(255,140,0,0.08));
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
             user-select: none;
+            border-left: 4px solid var(--color-tric-blue);
         }
 
         .intervention-header h3 {
@@ -200,7 +218,7 @@
 
         .btn-submit {
             padding: 12px 24px;
-            background: var(--color-green);
+            background: var(--color-tric-blue);
             color: white;
             border: none;
             border-radius: 8px;
@@ -211,12 +229,12 @@
         }
 
         .btn-submit:hover {
-            background: #6BC520;
+            background: var(--color-tric-orange);
         }
 
         .success-msg {
-            background: rgba(124,211,33,0.2);
-            color: var(--color-green);
+            background: rgba(255,140,0,0.15);
+            color: var(--color-tric-orange);
             padding: 12px;
             border-radius: 8px;
             margin-top: 12px;
@@ -277,7 +295,7 @@
 
         .export-btn {
             padding: 12px 24px;
-            background: var(--color-coral);
+            background: var(--color-tric-orange);
             color: white;
             border: none;
             border-radius: 8px;
@@ -287,7 +305,7 @@
         }
 
         .export-btn:hover {
-            background: #FF5555;
+            background: var(--color-tric-blue);
         }
 
         .dashboard-grid {
@@ -319,7 +337,7 @@
 
         .card .partner-tag {
             display: inline-block;
-            background: var(--color-blue);
+            background: var(--color-tric-orange);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -423,7 +441,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--color-green);
+            background: var(--color-tric-orange);
             margin-right: 8px;
         }
 
@@ -444,7 +462,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎯 TRIC Intervention Design System</h1>
+            <div class="logo-text">
+                <img src="data:image/png;base64,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Dnqax/hFmHGLoCBtRsgFlF1M7MOKpmnbL4rOqkPLvg0oERQembBgpq4iu4TmrkdIzd5KdGHRIdk8xj/Y7ahmpidMn2dA36XtKMjanXV5zZVdKHz+ok3yeYyYfkXdIy51Nf06qT9yQrMgeopzd6KLOBM9S96Lt7pGERfNnAlzVVze+L0HLcUGqxf88OP0GLVaHfLTz7OOZNUYSRM3hzG/+PLxXy/Nq45auScsOELpC90mvkd+83AF0JfX1ZWbPKtro7mltbW1xSCjiFS4vMoBl7g+7bKZnSsarlUOj1dV5Ut8WnW9rf1GR6fFYuns6m7vuelPGzcijdjIsHCzcZqZfWOvfcVRcAszDvDob2bz7V6L1Wq1OGBfWbvu3FVK5KJjrmbu2d5U/M7wk5yzR+7zH/9jxCd1bR28BI/VeqNZKRFH8EEKQqaHwuamwbnNv4/HEKnvHmVhN+nVKSpiZKpQhciDeWByLdLXJelhsbb5ycOtCOa3LLdEm03GrHcpUj+Gh6WzVWERpj9NvEXjK0uLqLrH8LC2+8vDU5GRW7GHLkVuiz2sTuyvByaOiGOy7XclUj8o0rAMtT0aeNTzuNem0uW/lcQ7EQYbzQ/7m/rNja5EnggdYu3ucxbqbj7t/fOZ3zy8E2Ee/JU/fCMjJdLcIXgMibdguuf1yokMG+L3R53pSokMCB3S5a/lz3sR8Zx7bnRcSuQxL+K/VWM8Isx9ibiEiO4GLzIoX4d4LsKYpbbuEiKunXyHvJDPw3MR6eMICZGbwjfryUQUMVZKxSVEhLHux+XPdxHmmuRDoYTIS2HSuj4RRcyST8ISIqLlsA/Jx6sXeQYiE0zk6f9FpG1iDnbGa5FHE3z69VhEtCA+DWiRPtHDSECLGEQHD347apBDBL0Qvlt+fCKUQUS0Rxk5bzU/aVFKxN2sJXFkKgwSi7VLvJQ093RYFTvX8kEEDYkOHwZ7nH1QP3Bn0Kr8AZ1XIs+HHWsN/t3e3t7d2+k42ZqwIpIHdEPDDhqF87mAE+nrtIxFYImItikBLjJsCpZbRPJW9yL33wVjDvYGSRE00CGlYh302zrSz10CurxDZJEWucXFR90htjy2jLx6s1pv+O8O8dZV8wMb/1y7JxU+f9ZlGDVy8atNo2KtT3v5OwUbg+3P/XgZr6/gkL5mdxMW4pLRvkdP7gx1d3f/2/7s5V0Zjx0BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhw/gNCWmC7e96ungAAABt0RVh0cGRmOkF1dGhvcgBtYXJrdXMgVsOkaMOkbMOk46lOTQAAAGR0RVh0eG1wOkNyZWF0b3JUb29sAENhbnZhIChSZW5kZXJlcikgZG9jPURBSEZKWUQzd1l3IHVzZXI9VUFHMVJnZmpLeW8gYnJhbmQ9QkFHMVJnbXpzV3cgdGVtcGxhdGU9Q29tcGFzcyOCGQgAAAAASUVORK5CYII=" alt="TRIC Logo" class="logo-img">
+                <h1>TRIC Intervention System</h1>
+            </div>
             <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
         </div>
 
@@ -488,7 +509,7 @@
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxTbiO17dvU_BTW2-nk7DKIeB1IpkrYO03eqn4cJZ3wqBRToLaovUY4j4-PacosMrlb/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOIIfNOxcO_Z_2HBD4dPj5ltLPa5HEgOVR-OkmGYJLZlqU4bVGMuSwyMfVJ4GcJkQH/exec';
 
         let interventions = {};
 
@@ -661,9 +682,12 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
             errorMsg.classList.remove('show');
 
             try {
+                // NOTE: Do NOT set a Content-Type header here.
+                // Any custom Content-Type turns this into a "preflighted" request,
+                // and Google Apps Script cannot answer CORS preflight (OPTIONS).
+                // Leaving it off sends text/plain -> a "simple request" -> no preflight.
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
@@ -681,7 +705,7 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
 
                     renderDashboard();
                 } else {
-                    throw new Error(result.error || 'Save failed');
+                    throw new Error(result.message || result.error || 'Save failed');
                 }
             } catch (error) {
                 console.error("Save error:", error);
