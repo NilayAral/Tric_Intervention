@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRIC Intervention Design System</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+    <style>
+        :root {
+            --color-pink: #FF6B9D;
+            --color-blue: #4A90E2;
+            --color-purple: #B388EB;
+            --color-green: #7ED321;
+            --color-orange: #FF9500;
+            --color-teal: #00BFA5;
+            --color-coral: #FF6B6B;
+            --color-indigo: #5C6BC0;
+
+            --bg-light: #FFFFFF;
+            --bg-pale: #F8F9FA;
+            --text-dark: #1A1A1A;
+            --text-muted: #666666;
+            --border-light: #E0E0E0;
+
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg-light: #1A1A1A;
+                --bg-pale: #242424;
+                --text-dark: #F5F5F5;
+                --text-muted: #AAAAAA;
+                --border-light: #333333;
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Inter', system-ui, sans-serif;
+            padding: 24px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--color-pink), var(--color-blue), var(--color-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .tab-btn.active {
+            color: var(--text-dark);
+            border-bottom-color: var(--color-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* FORM TAB */
+        .form-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 16px;
+        }
+
+        .intervention-group {
+            background: var(--bg-pale);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            border-left: 5px solid var(--color-blue);
+        }
+
+        .intervention-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(74,144,226,0.1), rgba(179,136,235,0.1));
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .intervention-header h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .intervention-header .partner-name {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .intervention-header .progress {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            background: var(--bg-light);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .intervention-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .intervention-group.active .intervention-content {
+            max-height: 1200px;
+        }
+
+        .form-fields {
+            padding: 20px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-field label {
+            font-weight: 600;
+            font-size: 0.95em;
+            color: var(--text-dark);
+        }
+
+        .form-field input,
+        .form-field textarea,
+        .form-field select {
+            padding: 10px 12px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95em;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            transition: border-color 0.3s;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: var(--color-blue);
+        }
+
+        .form-field textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            padding: 12px 24px;
+            background: var(--color-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 16px;
+        }
+
+        .btn-submit:hover {
+            background: #6BC520;
+        }
+
+        .success-msg {
+            background: rgba(124,211,33,0.2);
+            color: var(--color-green);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+            font-size: 0.9em;
+        }
+
+        .success-msg.show {
+            display: block;
+        }
+
+        .error-msg {
+            background: rgba(255,107,107,0.2);
+            color: var(--color-coral);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+            font-size: 0.9em;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        /* DASHBOARD TAB */
+        .dashboard-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--color-blue);
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            background: var(--color-coral);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #FF5555;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-pale);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid var(--color-blue);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+
+        .card .partner-tag {
+            display: inline-block;
+            background: var(--color-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .card-field {
+            margin-bottom: 12px;
+            font-size: 0.9em;
+        }
+
+        .card-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            color: var(--text-dark);
+            margin-top: 4px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-detail {
+            margin-bottom: 24px;
+        }
+
+        .modal-detail h4 {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .modal-detail p {
+            line-height: 1.8;
+            color: var(--text-dark);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state h2 {
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-green);
+            margin-right: 8px;
+        }
+
+        .status-indicator.empty {
+            background: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 TRIC Intervention Design System</h1>
+            <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('form')">📝 Form - Data Entry</button>
+            <button class="tab-btn" onclick="switchTab('dashboard')">📊 Dashboard - Live View</button>
+        </div>
+
+        <!-- FORM TAB -->
+        <div id="form" class="tab-content active">
+            <div class="form-container" id="formContainer"></div>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content">
+            <div class="dashboard-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search...">
+                </div>
+                <select id="filterPartner" class="filter-select">
+                    <option value="">All Partners</option>
+                </select>
+                <button class="export-btn" onclick="exportCSV()">💾 Export to CSV</button>
+            </div>
+
+            <div id="dashboardContent">
+                <div class="empty-state">
+                    <h2>📭 Waiting for Data</h2>
+                    <p>Data entered in the form will appear here automatically</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL -->
+        <div class="modal" id="detailModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp3_nUwg_Oq4PglZXNIrHPyu5rezINdhM6jdomk5iYv0K8n5SCH4bc3bBPAxCZx572/exec';
+
+        let interventions = {};
+
+        const PARTNERS = [
+            "FI - TURKU UAS",
+            "AT - UWK",
+            "FI - Kukunori",
+            "ES - UPV",
+            "PL - UG",
+            "AT - JaW",
+            "DK - BCSyd",
+            "ES - IESBG",
+            "FI - MarkEd",
+            "PL - Innocamp",
+            "DK - EASV",
+            "TRIC Coordinator"
+        ];
+
+        const FIELDS = [
+            { id: 'learnerProfile', label: 'Learner Profile I Know Well', type: 'textarea', placeholder: 'Age, EQF level, context, short description...' },
+            { id: 'hardToAccess', label: 'Learner Hard to Access', type: 'textarea', placeholder: 'Age, EQF level, why difficult to reach...' },
+            { id: 'transitionChallenge', label: '👉 Transition Challenge', type: 'textarea', placeholder: 'From → To transition (e.g., School → Work)...' },
+            { id: 'keyUncertainty', label: '❓ Key Uncertainty', type: 'textarea', placeholder: 'What is uncertain for learners? (Academic, Social, Economic, Digital)...' },
+            { id: 'interventionType', label: 'Intervention Type', type: 'select', options: ['Academic', 'Social', 'Economic', 'Digital', 'Mixed'] },
+            { id: 'interventionDescription', label: 'Intervention Description', type: 'textarea', placeholder: 'Describe the intervention...' },
+            { id: 'format', label: 'Format', type: 'text', placeholder: 'e.g., Online, Hybrid, Face-to-face' },
+            { id: 'duration', label: 'Duration / Intensity', type: 'text', placeholder: 'e.g., 4-5 meetings, weekly sessions...' },
+            { id: 'keyCompetence', label: 'Key Competence to Build', type: 'textarea', placeholder: 'What competence should this build?' }
+        ];
+
+        const COLORS = [
+            'var(--color-pink)', 'var(--color-blue)', 'var(--color-purple)',
+            'var(--color-green)', 'var(--color-orange)', 'var(--color-teal)',
+            'var(--color-coral)', 'var(--color-indigo)', 'var(--color-blue)',
+            'var(--color-pink)', 'var(--color-purple)', 'var(--color-green)'
+        ];
+
+        function renderForm() {
+            const container = document.getElementById('formContainer');
+            let html = '';
+
+            // Example Intervention
+            html += `
+                <div class="intervention-group active" data-intervention="0">
+                    <div class="intervention-header" onclick="toggleIntervention(0)">
+                        <div>
+                            <h3>⭐ Example - Intervention #0</h3>
+                            <div class="partner-name">📚 Reference Example</div>
+                        </div>
+                        <span class="progress"><span class="status-indicator"></span>Example</span>
+                    </div>
+                    <div class="intervention-content">
+                        <form class="form-fields" data-intervention="0">
+                            <div class="form-field">
+                                <label>Learner Profile I Know Well</label>
+                                <textarea disabled>Age: 20, EQF Level: 5, Context: VET Student (Healthcare Assistant)
+Profile: Anna is motivated and attends classes regularly. She wants a stable job and does well when instructions are clear.</textarea>
+                            </div>
+                            <div class="form-field">
+                                <label>Learner Hard to Access</label>
+                                <textarea disabled>Age: 24, EQF Level: 4, Context: Early school leaver, part-time work
+Profile: Marco left school early and works short-term jobs. He learns better through practice than theory.</textarea>
+                            </div>
+                            <div class="form-field">
+                                <label>👉 Transition Challenge</label>
+                                <textarea disabled>From → To: VET → First Job
+Main challenge: Anna is afraid of making mistakes at work.</textarea>
+                            </div>
+                            <div class="form-field">
+                                <label>❓ Key Uncertainty</label>
+                                <textarea disabled>Type: Academic + Social
+Description: She is unsure if her skills are "good enough" for real work.</textarea>
+                            </div>
+                            <div class="form-field">
+                                <label>Intervention Type</label>
+                                <input type="text" value="Academic + Social" disabled>
+                            </div>
+                            <div class="form-field">
+                                <label>Intervention Description</label>
+                                <textarea disabled>Workplace readiness program with mock scenarios and peer mentoring.</textarea>
+                            </div>
+                            <div class="form-field">
+                                <label>Format</label>
+                                <input type="text" value="Hybrid (workshops + mentoring)" disabled>
+                            </div>
+                            <div class="form-field">
+                                <label>Duration / Intensity</label>
+                                <input type="text" value="4-5 weeks, 2 hours per week" disabled>
+                            </div>
+                            <div class="form-field">
+                                <label>Key Competence to Build</label>
+                                <textarea disabled>Self-efficacy, professional communication, confidence in decision-making.</textarea>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            PARTNERS.forEach((partner, idx) => {
+                const interventionNum = idx + 1;
+                html += `
+                    <div class="intervention-group" data-intervention="${interventionNum}">
+                        <div class="intervention-header" onclick="toggleIntervention(${interventionNum})">
+                            <div>
+                                <h3>Intervention #${interventionNum}</h3>
+                                <div class="partner-name">🏢 ${partner}</div>
+                            </div>
+                            <span class="progress"><span class="status-indicator empty"></span>Not saved</span>
+                        </div>
+                        <div class="intervention-content">
+                            <form class="form-fields" data-intervention="${interventionNum}">
+                                ${FIELDS.map(field => {
+                                    if (field.type === 'select') {
+                                        return `
+                                            <div class="form-field">
+                                                <label>${field.label}</label>
+                                                <select name="${field.id}">
+                                                    <option value="">Select...</option>
+                                                    ${field.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                                                </select>
+                                            </div>
+                                        `;
+                                    } else if (field.type === 'textarea') {
+                                        return `
+                                            <div class="form-field">
+                                                <label>${field.label}</label>
+                                                <textarea name="${field.id}" placeholder="${field.placeholder}"></textarea>
+                                            </div>
+                                        `;
+                                    } else {
+                                        return `
+                                            <div class="form-field">
+                                                <label>${field.label}</label>
+                                                <input type="text" name="${field.id}" placeholder="${field.placeholder}">
+                                            </div>
+                                        `;
+                                    }
+                                }).join('')}
+                                <button type="submit" class="btn-submit">💾 Save to Google Sheets</button>
+                                <div class="success-msg"></div>
+                                <div class="error-msg"></div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            document.querySelectorAll('form[data-intervention]').forEach(form => {
+                if (form.getAttribute('data-intervention') !== '0') {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        const interventionNum = form.getAttribute('data-intervention');
+                        saveIntervention(interventionNum, form);
+                    });
+                }
+            });
+        }
+
+        async function saveIntervention(num, form) {
+            const data = { partner: PARTNERS[parseInt(num) - 1] };
+            new FormData(form).forEach((value, key) => {
+                data[key] = value;
+            });
+            data.timestamp = new Date().toISOString();
+
+            const successMsg = form.querySelector('.success-msg');
+            const errorMsg = form.querySelector('.error-msg');
+            errorMsg.classList.remove('show');
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    interventions[`i${num}`] = data;
+                    successMsg.textContent = '✅ Saved to Google Sheets!';
+                    successMsg.classList.add('show');
+                    setTimeout(() => successMsg.classList.remove('show'), 3000);
+
+                    const group = document.querySelector(`[data-intervention="${num}"]`);
+                    const progress = group.querySelector('.progress');
+                    progress.innerHTML = '<span class="status-indicator"></span>Saved ☁️';
+
+                    renderDashboard();
+                } else {
+                    throw new Error(result.error || 'Save failed');
+                }
+            } catch (error) {
+                console.error("Save error:", error);
+                errorMsg.textContent = '❌ Error: ' + error.message;
+                errorMsg.classList.add('show');
+            }
+        }
+
+        function toggleIntervention(num) {
+            const group = document.querySelector(`[data-intervention="${num}"]`);
+            group.classList.toggle('active');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+            if (tab === 'dashboard') renderDashboard();
+        }
+
+        function renderDashboard() {
+            const content = document.getElementById('dashboardContent');
+            const data = Object.values(interventions).filter(i => i.learnerProfile);
+
+            if (data.length === 0) {
+                content.innerHTML = `<div class="empty-state"><h2>📭 Waiting for Data</h2><p>Data entered in the form will appear here automatically</p></div>`;
+                return;
+            }
+
+            let html = '<div class="dashboard-grid">';
+            data.forEach((item, idx) => {
+                const color = COLORS[idx % COLORS.length];
+                html += `
+                    <div class="card" style="border-left-color: ${color}" onclick="showModal(${idx})">
+                        <div class="partner-tag">${item.partner}</div>
+                        <h3>Intervention #${idx + 1}</h3>
+                        <div class="card-field">
+                            <div class="card-label">Transition Challenge</div>
+                            <div class="card-value">${(item.transitionChallenge || '').substring(0, 80)}...</div>
+                        </div>
+                        <div class="card-field">
+                            <div class="card-label">Intervention Type</div>
+                            <div class="card-value">${item.interventionType || '-'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            content.innerHTML = html;
+
+            const partners = [...new Set(data.map(i => i.partner))];
+            const filterPartner = document.getElementById('filterPartner');
+            filterPartner.innerHTML = '<option value="">All Partners</option>';
+            partners.forEach(partner => {
+                filterPartner.innerHTML += `<option value="${partner}">${partner}</option>`;
+            });
+        }
+
+        function showModal(idx) {
+            const data = Object.values(interventions).filter(i => i.learnerProfile)[idx];
+            document.getElementById('modalBody').innerHTML = `
+                <h2>${data.partner} - Intervention #${idx + 1}</h2>
+                ${FIELDS.map(field => `
+                    <div class="modal-detail">
+                        <h4>${field.label}</h4>
+                        <p>${data[field.id] || '-'}</p>
+                    </div>
+                `).join('')}
+            `;
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('show');
+        }
+
+        function exportCSV() {
+            const data = Object.values(interventions).filter(i => i.learnerProfile);
+            let csv = ['Partner', ...FIELDS.map(f => f.label)].join(',');
+            data.forEach(item => {
+                const row = [`"${item.partner}"`, ...FIELDS.map(f => `"${(item[f.id] || '').replace(/"/g, '""')}"`)];
+                csv += '\n' + row.join(',');
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'tric-interventions.csv';
+            a.click();
+        }
+
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'detailModal') closeModal();
+        });
+
+        renderForm();
+    </script>
+</body>
+</html>
