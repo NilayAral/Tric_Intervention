@@ -471,7 +471,7 @@
                 <h1>TRIC Intervention System</h1>
             </div>
             <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
-            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v3 · no-preflight</p>
+            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v4 · live-sync</p>
         </div>
 
         <div class="tabs">
@@ -493,8 +493,11 @@
                 <select id="filterPartner" class="filter-select">
                     <option value="">All Partners</option>
                 </select>
+                <button class="export-btn" onclick="loadData(true)">🔄 Refresh</button>
                 <button class="export-btn" onclick="exportCSV()">💾 Export to CSV</button>
             </div>
+
+            <div id="syncStatus" style="font-size:0.85em;color:var(--text-muted);margin-bottom:16px;">Loading saved interventions…</div>
 
             <div id="dashboardContent">
                 <div class="empty-state">
@@ -545,11 +548,12 @@
             { id: 'keyCompetence', label: 'Key Competence to Build', type: 'textarea', placeholder: 'What competence should this build?' }
         ];
 
+        // One accent per intervention. TRIC blue and orange lead, the rest
+        // are spaced around the wheel so 12 cards stay tellable apart.
         const COLORS = [
-            'var(--color-pink)', 'var(--color-blue)', 'var(--color-purple)',
-            'var(--color-green)', 'var(--color-orange)', 'var(--color-teal)',
-            'var(--color-coral)', 'var(--color-indigo)', 'var(--color-blue)',
-            'var(--color-pink)', 'var(--color-purple)', 'var(--color-green)'
+            '#0052CC', '#FF8C00', '#0E9594', '#7B4FA8',
+            '#D23F57', '#3E8E41', '#5B7FD4', '#B8860B',
+            '#0288D1', '#A63A8F', '#E2582C', '#557C3E'
         ];
 
         function renderForm() {
@@ -676,11 +680,13 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
         }
 
         async function saveIntervention(num, form) {
-            const data = { partner: PARTNERS[parseInt(num) - 1] };
+            const data = {
+                intervention: String(num),
+                partner: PARTNERS[parseInt(num) - 1]
+            };
             new FormData(form).forEach((value, key) => {
                 data[key] = value;
             });
-            data.timestamp = new Date().toISOString();
 
             const successMsg = form.querySelector('.success-msg');
             const errorMsg = form.querySelector('.error-msg');
@@ -699,16 +705,17 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                 const result = await response.json();
 
                 if (result.success) {
-                    interventions[`i${num}`] = data;
-                    successMsg.textContent = '✅ Saved to Google Sheets!';
+                    interventions[String(num)] = data;
+                    form.dataset.dirty = '';   // saved, so it may be refreshed again
+                    successMsg.textContent = result.mode === 'update'
+                        ? '✅ Updated in Google Sheets!'
+                        : '✅ Saved to Google Sheets!';
                     successMsg.classList.add('show');
                     setTimeout(() => successMsg.classList.remove('show'), 3000);
 
-                    const group = document.querySelector(`[data-intervention="${num}"]`);
-                    const progress = group.querySelector('.progress');
-                    progress.innerHTML = '<span class="status-indicator"></span>Saved ☁️';
-
+                    markSaved(num);
                     renderDashboard();
+                    loadData();   // pull everyone's latest state back down
                 } else {
                     throw new Error(result.message || result.error || 'Save failed');
                 }
@@ -732,55 +739,147 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
             if (tab === 'dashboard') renderDashboard();
         }
 
+        /* ---------- data loading (all partners share one sheet) ---------- */
+
+        let lastSync = null;
+
+        async function loadData(manual) {
+            const status = document.getElementById('syncStatus');
+            if (manual) status.textContent = 'Refreshing…';
+
+            try {
+                // A plain GET with no custom headers stays a "simple request",
+                // so it is not blocked by CORS.
+                const res = await fetch(GOOGLE_SCRIPT_URL + '?t=' + Date.now());
+                const result = await res.json();
+                if (!result.success) throw new Error(result.message || 'Load failed');
+
+                interventions = {};
+                (result.rows || []).forEach(row => {
+                    if (row.intervention) interventions[String(row.intervention)] = row;
+                });
+
+                lastSync = new Date();
+                const n = Object.keys(interventions).length;
+                status.textContent = n + ' of ' + PARTNERS.length +
+                    ' interventions saved · last updated ' +
+                    lastSync.toLocaleTimeString();
+
+                Object.keys(interventions).forEach(markSaved);
+                prefillForms();
+                renderDashboard();
+
+            } catch (err) {
+                console.error('Load error:', err);
+                status.textContent = '⚠️ Could not reach Google Sheets (' + err.message + ')';
+            }
+        }
+
+        function markSaved(num) {
+            const group = document.querySelector('.intervention-group[data-intervention="' + num + '"]');
+            if (!group) return;
+            const progress = group.querySelector('.progress');
+            if (progress) progress.innerHTML = '<span class="status-indicator"></span>Saved ☁️';
+        }
+
+        // Put saved values back into the forms so a partner can edit and
+        // re-save. A form the user is currently typing in is left alone.
+        function prefillForms() {
+            document.querySelectorAll('form[data-intervention]').forEach(form => {
+                const num = form.getAttribute('data-intervention');
+                if (num === '0') return;
+                if (form.dataset.dirty === '1') return;
+                if (form.contains(document.activeElement)) return;
+
+                const saved = interventions[num];
+                if (!saved) return;
+
+                FIELDS.forEach(field => {
+                    const el = form.querySelector('[name="' + field.id + '"]');
+                    if (el && saved[field.id] !== undefined) el.value = saved[field.id];
+                });
+            });
+        }
+
+        /* ---------- dashboard ---------- */
+
+        function visibleList() {
+            const term = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+            const partner = document.getElementById('filterPartner').value;
+
+            return Object.keys(interventions)
+                .sort((a, b) => parseInt(a) - parseInt(b))
+                .map(k => interventions[k])
+                .filter(item => {
+                    if (partner && item.partner !== partner) return false;
+                    if (!term) return true;
+                    return FIELDS.concat([{ id: 'partner' }])
+                        .some(f => String(item[f.id] || '').toLowerCase().includes(term));
+                });
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
         function renderDashboard() {
             const content = document.getElementById('dashboardContent');
-            const data = Object.values(interventions).filter(i => i.learnerProfile);
+
+            // Rebuild the partner filter from whatever is actually saved.
+            const filterPartner = document.getElementById('filterPartner');
+            const current = filterPartner.value;
+            const partners = [...new Set(Object.values(interventions).map(i => i.partner).filter(Boolean))];
+            filterPartner.innerHTML = '<option value="">All Partners</option>' +
+                partners.map(p => '<option value="' + esc(p) + '">' + esc(p) + '</option>').join('');
+            filterPartner.value = current;
+
+            const data = visibleList();
 
             if (data.length === 0) {
-                content.innerHTML = `<div class="empty-state"><h2>📭 Waiting for Data</h2><p>Data entered in the form will appear here automatically</p></div>`;
+                const anySaved = Object.keys(interventions).length > 0;
+                content.innerHTML = '<div class="empty-state"><h2>' +
+                    (anySaved ? '🔍 No matches' : '📭 Waiting for Data') + '</h2><p>' +
+                    (anySaved
+                        ? 'No intervention matches your search or filter.'
+                        : 'Interventions saved by any partner will appear here.') +
+                    '</p></div>';
                 return;
             }
 
             let html = '<div class="dashboard-grid">';
-            data.forEach((item, idx) => {
-                const color = COLORS[idx % COLORS.length];
+            data.forEach(item => {
+                const num = parseInt(item.intervention);
+                const color = COLORS[(num - 1) % COLORS.length];
+                const challenge = String(item.transitionChallenge || '');
                 html += `
-                    <div class="card" style="border-left-color: ${color}" onclick="showModal(${idx})">
-                        <div class="partner-tag">${item.partner}</div>
-                        <h3>Intervention #${idx + 1}</h3>
+                    <div class="card" style="border-left-color: ${color}" onclick="showModal('${esc(item.intervention)}')">
+                        <div class="partner-tag">${esc(item.partner)}</div>
+                        <h3>Intervention #${esc(item.intervention)}</h3>
                         <div class="card-field">
                             <div class="card-label">Transition Challenge</div>
-                            <div class="card-value">${(item.transitionChallenge || '').substring(0, 80)}...</div>
+                            <div class="card-value">${esc(challenge.substring(0, 90))}${challenge.length > 90 ? '…' : ''}</div>
                         </div>
                         <div class="card-field">
                             <div class="card-label">Intervention Type</div>
-                            <div class="card-value">${item.interventionType || '-'}</div>
+                            <div class="card-value">${esc(item.interventionType || '-')}</div>
                         </div>
                     </div>
                 `;
             });
             html += '</div>';
             content.innerHTML = html;
-
-            const partners = [...new Set(data.map(i => i.partner))];
-            const filterPartner = document.getElementById('filterPartner');
-            filterPartner.innerHTML = '<option value="">All Partners</option>';
-            partners.forEach(partner => {
-                filterPartner.innerHTML += `<option value="${partner}">${partner}</option>`;
-            });
         }
 
-        function showModal(idx) {
-            const data = Object.values(interventions).filter(i => i.learnerProfile)[idx];
-            document.getElementById('modalBody').innerHTML = `
-                <h2>${data.partner} - Intervention #${idx + 1}</h2>
-                ${FIELDS.map(field => `
-                    <div class="modal-detail">
-                        <h4>${field.label}</h4>
-                        <p>${data[field.id] || '-'}</p>
-                    </div>
-                `).join('')}
-            `;
+        function showModal(num) {
+            const data = interventions[String(num)];
+            if (!data) return;
+            document.getElementById('modalBody').innerHTML =
+                '<h2>' + esc(data.partner) + ' - Intervention #' + esc(data.intervention) + '</h2>' +
+                FIELDS.map(field =>
+                    '<div class="modal-detail"><h4>' + esc(field.label) + '</h4><p>' +
+                    esc(data[field.id] || '-') + '</p></div>'
+                ).join('');
             document.getElementById('detailModal').classList.add('show');
         }
 
@@ -789,26 +888,42 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
         }
 
         function exportCSV() {
-            const data = Object.values(interventions).filter(i => i.learnerProfile);
-            let csv = ['Partner', ...FIELDS.map(f => f.label)].join(',');
+            const data = visibleList();
+            let csv = ['Intervention #', 'Partner', ...FIELDS.map(f => f.label)].join(',');
             data.forEach(item => {
-                const row = [`"${item.partner}"`, ...FIELDS.map(f => `"${(item[f.id] || '').replace(/"/g, '""')}"`)];
+                const row = ['"' + item.intervention + '"', '"' + String(item.partner || '') + '"']
+                    .concat(FIELDS.map(f => '"' + String(item[f.id] || '').replace(/"/g, '""') + '"'));
                 csv += '\n' + row.join(',');
             });
 
-            const blob = new Blob([csv], { type: 'text/csv' });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = 'tric-interventions.csv';
             a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         document.getElementById('detailModal').addEventListener('click', (e) => {
             if (e.target.id === 'detailModal') closeModal();
         });
+        document.getElementById('searchInput').addEventListener('input', renderDashboard);
+        document.getElementById('filterPartner').addEventListener('change', renderDashboard);
+
+        /* ---------- startup ---------- */
 
         renderForm();
+
+        // Mark a form as "being edited" so a background refresh never
+        // overwrites what someone is typing.
+        document.querySelectorAll('form[data-intervention]').forEach(form => {
+            form.addEventListener('input', () => { form.dataset.dirty = '1'; });
+        });
+
+        loadData();
+        // 11 partners work at the same time, so keep pulling the latest state.
+        setInterval(loadData, 20000);
     </script>
 </body>
 </html>
