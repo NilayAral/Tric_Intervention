@@ -471,7 +471,7 @@
                 <h1>TRIC Intervention System</h1>
             </div>
             <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
-            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v4 · live-sync</p>
+            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v6 · 11 partners</p>
         </div>
 
         <div class="tabs">
@@ -532,8 +532,7 @@
             "ES - IESBG",
             "FI - MarkEd",
             "PL - Innocamp",
-            "DK - EASV",
-            "TRIC Coordinator"
+            "DK - EASV"
         ];
 
         const FIELDS = [
@@ -751,7 +750,30 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                 // A plain GET with no custom headers stays a "simple request",
                 // so it is not blocked by CORS.
                 const res = await fetch(GOOGLE_SCRIPT_URL + '?t=' + Date.now());
-                const result = await res.json();
+                const text = await res.text();
+
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (parseErr) {
+                    // Apps Script returned an HTML error page, not JSON.
+                    throw new Error('the endpoint did not return JSON — the deployed script is probably an older version');
+                }
+
+                // The current Code.gs always reports its version. If it is
+                // missing, an older build is still deployed.
+                if (!result.version) {
+                    status.innerHTML = '⚠️ An <b>older Apps Script version</b> is deployed — it cannot send the saved rows. ' +
+                        'Paste the latest Code.gs, then Deploy → New deployment, and put the new URL in this page.';
+                    return;
+                }
+
+                if (result.legacySheet) {
+                    status.innerHTML = '⚠️ The sheet still has the <b>old column layout</b>. ' +
+                        'Open Apps Script, choose <b>resetSheet</b> in the function list and press Run, then save an intervention again.';
+                    return;
+                }
+
                 if (!result.success) throw new Error(result.message || 'Load failed');
 
                 interventions = {};
@@ -761,9 +783,12 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
 
                 lastSync = new Date();
                 const n = Object.keys(interventions).length;
-                status.textContent = n + ' of ' + PARTNERS.length +
-                    ' interventions saved · last updated ' +
-                    lastSync.toLocaleTimeString();
+                let msg = n + ' of ' + PARTNERS.length + ' interventions saved · last updated ' +
+                          lastSync.toLocaleTimeString();
+                if (result.skipped) {
+                    msg += ' · ' + result.skipped + ' row(s) in the sheet have no intervention number and were ignored';
+                }
+                status.textContent = msg;
 
                 Object.keys(interventions).forEach(markSaved);
                 prefillForms();
@@ -771,7 +796,7 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
 
             } catch (err) {
                 console.error('Load error:', err);
-                status.textContent = '⚠️ Could not reach Google Sheets (' + err.message + ')';
+                status.textContent = '⚠️ Could not load from Google Sheets: ' + err.message;
             }
         }
 
