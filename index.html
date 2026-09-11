@@ -638,7 +638,7 @@
                 <h1>TRIC Intervention System</h1>
             </div>
             <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
-            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v12 · wide</p>
+            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v13 · resilient sync</p>
         </div>
 
         <div class="tabs">
@@ -926,7 +926,15 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                     body: JSON.stringify(data)
                 });
 
-                const result = await response.json();
+                // Apps Script answers an overloaded request with an HTML error
+                // page, so parse defensively instead of calling .json().
+                const raw = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(raw);
+                } catch (parseErr) {
+                    throw new Error('Google Sheets is busy right now — press Save again in a moment.');
+                }
 
                 if (result.success) {
                     interventions[String(num)] = data;
@@ -937,9 +945,10 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                     successMsg.classList.add('show');
                     setTimeout(() => successMsg.classList.remove('show'), 3000);
 
+                    pendingSaves[String(num)] = { data: data, at: Date.now() };
                     markSaved(num);
                     renderDashboard();
-                    loadData();   // pull everyone's latest state back down
+                    markActive();   // poll faster for a while so others see it
                 } else {
                     throw new Error(result.message || result.error || 'Save failed');
                 }
@@ -967,44 +976,104 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
 
         let lastSync = null;
 
-        async function loadData(manual) {
+        /* ---- sync settings ----
+           Apps Script bills real execution time against a daily quota, and
+           every open page polls the same script. 11 partners polling every
+           20s is ~33 requests a minute, which both burns that quota over a
+           workshop and makes Google start answering with HTML error pages.
+           So: poll slowly at rest, burst briefly after someone saves, and
+           show your own save instantly from local state. */
+        const POLL_IDLE = 60000;     // quiet baseline
+        const POLL_ACTIVE = 6000;    // just after a save, when change is likely
+        const ACTIVE_WINDOW = 40000; // how long the burst lasts
+        const PENDING_TTL = 45000;   // trust a local save over the sheet this long
+        const REQUEST_TIMEOUT = 15000;
+
+        let everLoaded = false;      // have we ever had a good response?
+        let pendingSaves = {};       // saves the sheet has not echoed back yet
+        let pollTimer = null;
+        let activeUntil = 0;
+
+        function schedulePoll() {
+            clearTimeout(pollTimer);
+            const delay = Date.now() < activeUntil ? POLL_ACTIVE : POLL_IDLE;
+            pollTimer = setTimeout(() => loadData(), delay);
+        }
+
+        function markActive() {
+            activeUntil = Date.now() + ACTIVE_WINDOW;
+            schedulePoll();
+        }
+
+        // A save is shown immediately and kept on screen until the sheet
+        // confirms it, so a slow round-trip never makes a record vanish.
+        function applyPending() {
+            const now = Date.now();
+            Object.keys(pendingSaves).forEach(num => {
+                if (now - pendingSaves[num].at > PENDING_TTL) {
+                    delete pendingSaves[num];
+                } else {
+                    interventions[num] = pendingSaves[num].data;
+                }
+            });
+        }
+
+        async function loadData(manual, attempt) {
+            attempt = attempt || 0;
             const status = document.getElementById('syncStatus');
-            if (manual) status.textContent = 'Refreshing…';
+            if (manual && attempt === 0) status.textContent = 'Refreshing…';
+
+            clearTimeout(pollTimer);
 
             try {
                 // A plain GET with no custom headers stays a "simple request",
                 // so it is not blocked by CORS.
-                const res = await fetch(GOOGLE_SCRIPT_URL + '?t=' + Date.now());
-                const text = await res.text();
+                const ctrl = new AbortController();
+                const killer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT);
+                let text;
+                try {
+                    const res = await fetch(GOOGLE_SCRIPT_URL + '?t=' + Date.now(),
+                                            { signal: ctrl.signal });
+                    text = await res.text();
+                } finally {
+                    clearTimeout(killer);
+                }
 
                 let result;
                 try {
                     result = JSON.parse(text);
                 } catch (parseErr) {
-                    // Apps Script returned an HTML error page, not JSON.
-                    throw new Error('the endpoint did not return JSON — the deployed script is probably an older version');
+                    // Not JSON. If the script has answered correctly before,
+                    // this is Google returning an error/interstitial page,
+                    // not a wrong deployment.
+                    throw new Error(everLoaded
+                        ? 'Google Sheets is busy'
+                        : 'the endpoint did not return JSON — the deployed script is probably an older version');
                 }
 
-                // The current Code.gs always reports its version. If it is
-                // missing, an older build is still deployed.
                 if (!result.version) {
                     status.innerHTML = '⚠️ An <b>older Apps Script version</b> is deployed — it cannot send the saved rows. ' +
                         'Paste the latest Code.gs, then Deploy → New deployment, and put the new URL in this page.';
+                    schedulePoll();
                     return;
                 }
 
                 if (result.legacySheet) {
                     status.innerHTML = '⚠️ The sheet still has the <b>old column layout</b>. ' +
                         'Open Apps Script, choose <b>resetSheet</b> in the function list and press Run, then save an intervention again.';
+                    schedulePoll();
                     return;
                 }
 
                 if (!result.success) throw new Error(result.message || 'Load failed');
 
+                everLoaded = true;
+
                 interventions = {};
                 (result.rows || []).forEach(row => {
                     if (row.intervention) interventions[String(row.intervention)] = row;
                 });
+                applyPending();
 
                 lastSync = new Date();
                 const n = Object.keys(interventions).length;
@@ -1018,10 +1087,24 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                 Object.keys(interventions).forEach(markSaved);
                 prefillForms();
                 renderDashboard();
+                schedulePoll();
 
             } catch (err) {
                 console.error('Load error:', err);
-                status.textContent = '⚠️ Could not load from Google Sheets: ' + err.message;
+                const why = err.name === 'AbortError' ? 'Google Sheets did not answer in time' : err.message;
+
+                // Retry soon rather than waiting for the next poll.
+                if (attempt < 2) {
+                    status.textContent = '⏳ ' + why + ' — retrying…';
+                    pollTimer = setTimeout(() => loadData(manual, attempt + 1), 3000 * (attempt + 1));
+                    return;
+                }
+
+                status.textContent = everLoaded
+                    ? '⚠️ ' + why + '. Showing the last data received' +
+                      (lastSync ? ' (' + lastSync.toLocaleTimeString() + ')' : '') + '. Will keep trying.'
+                    : '⚠️ Could not load from Google Sheets: ' + why;
+                schedulePoll();
             }
         }
 
@@ -1171,9 +1254,12 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
             form.addEventListener('input', () => { form.dataset.dirty = '1'; });
         });
 
-        loadData();
-        // 11 partners work at the same time, so keep pulling the latest state.
-        setInterval(loadData, 20000);
+        loadData();   // schedulePoll() keeps it going from here
+
+        // Catch up immediately when the tab is brought back into view.
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) loadData();
+        });
     </script>
 </body>
 </html>
