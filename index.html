@@ -618,6 +618,16 @@
         .pane-hint { margin-bottom: 5px; font-size: 0.7em; }
 
         .form-container { max-height: 78vh; }
+
+        /* --- Use more of the screen: slimmer page gutters, wider container --- */
+        body { padding: 16px 18px; }
+        .container { max-width: 1800px; }
+        .form-layout { gap: 18px; }
+        .form-container { padding-right: 8px; }
+
+        @media (max-width: 600px) {
+            body { padding: 14px 16px; }
+        }
     </style>
 </head>
 <body>
@@ -628,7 +638,7 @@
                 <h1>TRIC Intervention System</h1>
             </div>
             <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
-            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v11 · compact</p>
+            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v12 · wide</p>
         </div>
 
         <div class="tabs">
