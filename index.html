@@ -507,6 +507,117 @@
                 border-color: rgba(255,255,255,0.3);
             }
         }
+
+        /* Two-pane form: the example stays pinned on the left as a
+           reference while partners work through the list on the right. */
+        .form-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .example-pane {
+            position: sticky;
+            top: 16px;
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* The pinned example never collapses. The descendant class is needed
+           to outrank ".intervention-group.active .intervention-content". */
+        .example-pane .intervention-group .intervention-content {
+            max-height: none;
+            overflow: visible;
+        }
+
+        .example-pane .intervention-header {
+            cursor: default;
+        }
+
+        .example-pane .intervention-group {
+            border-left-color: var(--color-tric-orange);
+        }
+
+        .example-pane .intervention-header {
+            border-left-color: var(--color-tric-orange);
+        }
+
+        .pane-hint {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .form-layout {
+                grid-template-columns: 1fr;
+            }
+            .example-pane {
+                position: static;
+                max-height: 420px;
+            }
+        }
+
+        /* In the reference pane the values are read-only prose, not form
+           controls, so nothing gets clipped inside a fixed-height box. */
+        .example-value {
+            padding: 8px 12px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            color: var(--text-dark);
+        }
+
+        .example-pane .progress {
+            display: none;
+        }
+
+        .example-pane .intervention-header h3 {
+            font-size: 1em;
+        }
+
+        /* --- Compact header so the form gets more of the screen --- */
+        .header { margin-bottom: 18px; }
+        .header h1 { font-size: 1.45em; margin-bottom: 2px; }
+        .header .logo-img { height: 38px; padding: 4px 7px; }
+        .header .logo-text { gap: 10px; margin-bottom: 6px; }
+        .header p { font-size: 0.82em; }
+
+        .tabs { margin-bottom: 18px; }
+        .tab-btn { padding: 9px 18px; font-size: 0.92em; }
+
+        /* --- Compact reference pane so the example fits without scrolling --- */
+        .example-pane { max-height: calc(100vh - 32px); }
+
+        .example-pane .intervention-header { padding: 8px 12px; }
+        .example-pane .intervention-header h3 { font-size: 0.88em; }
+        .example-pane .intervention-header .partner-name { font-size: 0.76em; }
+
+        .example-pane .form-fields { padding: 10px 12px; gap: 7px; }
+        .example-pane .form-field { gap: 2px; }
+
+        /* The reference text scales with viewport height so the whole example
+           still fits on a short laptop screen, without going unreadable on a
+           tall one. */
+        .example-pane .form-field label { font-size: clamp(9.5px, 1.25vh, 11.5px); }
+
+        .example-pane .example-value {
+            font-size: clamp(9.5px, 1.25vh, 11.5px);
+            padding: 5px 8px;
+            line-height: 1.35;
+        }
+
+        .pane-hint { margin-bottom: 5px; font-size: 0.7em; }
+
+        .form-container { max-height: 78vh; }
     </style>
 </head>
 <body>
@@ -517,7 +628,7 @@
                 <h1>TRIC Intervention System</h1>
             </div>
             <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
-            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v8 · flags</p>
+            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v11 · compact</p>
         </div>
 
         <div class="tabs">
@@ -527,7 +638,16 @@
 
         <!-- FORM TAB -->
         <div id="form" class="tab-content active">
-            <div class="form-container" id="formContainer"></div>
+            <div class="form-layout">
+                <aside class="example-pane">
+                    <div class="pane-hint">Reference — keep this open</div>
+                    <div id="examplePane"></div>
+                </aside>
+                <div class="form-container" id="formContainer">
+                    <div class="pane-hint">Your intervention</div>
+                    <div id="interventionList"></div>
+                </div>
+            </div>
         </div>
 
         <!-- DASHBOARD TAB -->
@@ -601,18 +721,20 @@
             return (m && FLAGS[m[1]]) ? FLAGS[m[1]] : '';
         }
 
+        // Ordered by country code, then by organisation, so partners from the
+        // same country sit together. Intervention numbers follow this order.
         const PARTNERS = [
-            "FI - TURKU UAS",
-            "AT - UWK",
-            "FI - Kukunori",
-            "ES - UPV",
-            "PL - UG",
             "AT - JaW",
+            "AT - UWK",
             "DK - BCSyd",
+            "DK - EASV",
             "ES - IESBG",
+            "ES - UPV",
+            "FI - Kukunori",
             "FI - MarkEd",
+            "FI - TURKU UAS",
             "PL - Innocamp",
-            "DK - EASV"
+            "PL - UG"
         ];
 
         const FIELDS = [
@@ -636,13 +758,14 @@
         ];
 
         function renderForm() {
-            const container = document.getElementById('formContainer');
+            const container = document.getElementById('interventionList');
+            let exampleHtml = '';
             let html = '';
 
-            // Example Intervention
-            html += `
+            // Example intervention - always open, lives in the left pane
+            exampleHtml += `
                 <div class="intervention-group active" data-intervention="0">
-                    <div class="intervention-header" onclick="toggleIntervention(0)">
+                    <div class="intervention-header">
                         <div>
                             <h3>⭐ Example - Intervention #0</h3>
                             <div class="partner-name">📚 Reference Example</div>
@@ -695,6 +818,18 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                     </div>
                 </div>
             `;
+
+            const examplePane = document.getElementById('examplePane');
+            examplePane.innerHTML = exampleHtml;
+
+            // Turn the example's disabled inputs into plain readable text.
+            examplePane.querySelectorAll('textarea[disabled], input[disabled]')
+                .forEach(el => {
+                    const div = document.createElement('div');
+                    div.className = 'example-value';
+                    div.textContent = (el.value || el.textContent || '').trim();
+                    el.replaceWith(div);
+                });
 
             PARTNERS.forEach((partner, idx) => {
                 const interventionNum = idx + 1;
