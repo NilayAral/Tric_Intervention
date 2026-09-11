@@ -493,6 +493,20 @@
         @media (max-width: 600px) {
             .site-footer .eu-logo { height: 44px; }
         }
+
+        .flag {
+            vertical-align: -2px;
+            margin-right: 6px;
+            border: 1px solid rgba(0,0,0,0.18);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) .flag {
+                border-color: rgba(255,255,255,0.3);
+            }
+        }
     </style>
 </head>
 <body>
@@ -503,7 +517,7 @@
                 <h1>TRIC Intervention System</h1>
             </div>
             <p>Data Entry + Live Dashboard - Gdańsk Workshop 2026</p>
-            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v7 · EU logo</p>
+            <p style="font-size:0.8em;opacity:0.6;margin-top:4px;">build v8 · flags</p>
         </div>
 
         <div class="tabs">
@@ -556,6 +570,36 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOIIfNOxcO_Z_2HBD4dPj5ltLPa5HEgOVR-OkmGYJLZlqU4bVGMuSwyMfVJ4GcJkQH/exec';
 
         let interventions = {};
+
+
+        /* Flags are drawn as inline SVG rather than emoji: Windows has no
+           flag glyphs, so 🇫🇮 renders there as the letters "FI". */
+        const FLAGS = {
+            FI: '<svg class="flag" width="20" height="12" viewBox="0 0 18 11" role="img" aria-label="Finland">' +
+                '<rect width="18" height="11" fill="#fff"/>' +
+                '<rect x="5" width="3" height="11" fill="#003580"/>' +
+                '<rect y="4" width="18" height="3" fill="#003580"/></svg>',
+            AT: '<svg class="flag" width="18" height="12" viewBox="0 0 9 6" role="img" aria-label="Austria">' +
+                '<rect width="9" height="6" fill="#fff"/>' +
+                '<rect width="9" height="2" fill="#ED2939"/>' +
+                '<rect y="4" width="9" height="2" fill="#ED2939"/></svg>',
+            ES: '<svg class="flag" width="18" height="12" viewBox="0 0 12 8" role="img" aria-label="Spain">' +
+                '<rect width="12" height="8" fill="#AA151B"/>' +
+                '<rect y="2" width="12" height="4" fill="#F1BF00"/></svg>',
+            PL: '<svg class="flag" width="19" height="12" viewBox="0 0 8 5" role="img" aria-label="Poland">' +
+                '<rect width="8" height="5" fill="#fff"/>' +
+                '<rect y="2.5" width="8" height="2.5" fill="#DC143C"/></svg>',
+            DK: '<svg class="flag" width="16" height="12" viewBox="0 0 37 28" role="img" aria-label="Denmark">' +
+                '<rect width="37" height="28" fill="#C8102E"/>' +
+                '<rect x="12" width="4" height="28" fill="#fff"/>' +
+                '<rect y="12" width="37" height="4" fill="#fff"/></svg>'
+        };
+
+        // The country code is the prefix of every partner name ("AT - UWK").
+        function flagFor(partner) {
+            const m = /^([A-Z]{2})\s*-/.exec(String(partner || ''));
+            return (m && FLAGS[m[1]]) ? FLAGS[m[1]] : '';
+        }
 
         const PARTNERS = [
             "FI - TURKU UAS",
@@ -659,7 +703,7 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                         <div class="intervention-header" onclick="toggleIntervention(${interventionNum})">
                             <div>
                                 <h3>Intervention #${interventionNum}</h3>
-                                <div class="partner-name">🏢 ${partner}</div>
+                                <div class="partner-name">${flagFor(partner)}${partner}</div>
                             </div>
                             <span class="progress"><span class="status-indicator empty"></span>Not saved</span>
                         </div>
@@ -915,7 +959,7 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
                 const challenge = String(item.transitionChallenge || '');
                 html += `
                     <div class="card" style="border-left-color: ${color}" onclick="showModal('${esc(item.intervention)}')">
-                        <div class="partner-tag">${esc(item.partner)}</div>
+                        <div class="partner-tag">${flagFor(item.partner)}${esc(item.partner)}</div>
                         <h3>Intervention #${esc(item.intervention)}</h3>
                         <div class="card-field">
                             <div class="card-label">Transition Challenge</div>
@@ -936,7 +980,7 @@ Description: She is unsure if her skills are "good enough" for real work.</texta
             const data = interventions[String(num)];
             if (!data) return;
             document.getElementById('modalBody').innerHTML =
-                '<h2>' + esc(data.partner) + ' - Intervention #' + esc(data.intervention) + '</h2>' +
+                '<h2>' + flagFor(data.partner) + esc(data.partner) + ' - Intervention #' + esc(data.intervention) + '</h2>' +
                 FIELDS.map(field =>
                     '<div class="modal-detail"><h4>' + esc(field.label) + '</h4><p>' +
                     esc(data[field.id] || '-') + '</p></div>'
