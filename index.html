@@ -338,17 +338,6 @@
             margin-bottom: 8px;
         }
 
-        .card .local-only {
-            display: inline-block;
-            margin-left: 6px;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.72em;
-            font-weight: 600;
-            background: rgba(255,140,0,0.18);
-            color: var(--color-tric-orange);
-        }
-
         .card .partner-tag {
             display: inline-block;
             background: var(--color-tric-orange);
@@ -717,7 +706,7 @@
                 <img src="data:image/png;base64,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" alt="TRIC Logo" class="logo-img">
                 <h1>TRIC Intervention System</h1>
                 <span class="header-meta">Data Entry + Live Dashboard · Gdańsk Workshop 2026</span>
-                <span class="header-build">build v27 · 30 participants</span>
+                <span class="header-build">build v28 · sheet only</span>
             </div>
         </div>
 
@@ -777,30 +766,9 @@
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7322lFhKasKOlnweV35gJZ5JtpQ-mowkKD46rS3JKD5WVdJ7BpBlVyK6llBE2dnx9/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOIIfNOxcO_Z_2HBD4dPj5ltLPa5HEgOVR-OkmGYJLZlqU4bVGMuSwyMfVJ4GcJkQH/exec';
 
         let interventions = {};
-
-        /* ---------- local safety net ----------
-           The sheet is the source of truth, but a single empty or failed read
-           must never wipe the screen. Everything the page has seen is mirrored
-           into this browser's storage and merged back on every poll. */
-        const STORE_KEY = 'tric_interventions_v1';
-        const DRAFT_KEY = 'tric_drafts_v1';
-        const OPEN_KEY  = 'tric_open_v1';
-
-        function loadStore(key) {
-            try { return JSON.parse(localStorage.getItem(key) || '{}') || {}; }
-            catch (e) { return {}; }          // private mode, cleared storage, quota
-        }
-        function saveStore(key, value) {
-            try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* ignore */ }
-        }
-
-        let localOnly = {};   // rows this page knows that the last read did not return
-
-
-
 
         /* Flags are drawn as inline SVG rather than emoji: Windows has no
            flag glyphs, so 🇫🇮 renders there as the letters "FI". */
@@ -1130,13 +1098,9 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
                     successMsg.classList.add('show');
                     setTimeout(() => successMsg.classList.remove('show'), 3000);
 
-                    pendingSaves[String(num)] = { data: data, at: Date.now() };
-                    interventions[String(num)] = data;
-                    saveStore(STORE_KEY, interventions);   // survives a reload
-                    clearDraft(num);                       // the typed copy is now saved
                     markSaved(num);
-                    renderDashboard();
-                    markActive();   // poll faster for a while so others see it
+                    markActive();          // poll faster for a while so others see it
+                    loadData(true);        // and read the stored row straight back
                 } else {
                     throw new Error(result.message || result.error || 'Save failed');
                 }
@@ -1206,16 +1170,6 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
             const group = document.querySelector(`[data-intervention="${num}"]`);
             group.classList.toggle('active');
 
-            // Remember what is open, so a reload or a crash puts the partner
-            // back where they were instead of at the top of a closed list.
-            try {
-                if (group.classList.contains('active')) {
-                    localStorage.setItem(OPEN_KEY, String(num));
-                } else if (localStorage.getItem(OPEN_KEY) === String(num)) {
-                    localStorage.removeItem(OPEN_KEY);
-                }
-            } catch (e) { /* storage unavailable */ }
-
             alignPanesSoon();
         }
 
@@ -1241,13 +1195,11 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
         const POLL_IDLE = 120000;    // quiet baseline
         const POLL_ACTIVE = 6000;    // just after a save, when change is likely
         const ACTIVE_WINDOW = 40000; // how long the burst lasts
-        const PENDING_TTL = 45000;   // trust a local save over the sheet this long
         const REQUEST_TIMEOUT = 15000;
         const MAX_BACKOFF = 300000;  // never wait more than 5 minutes
         let consecutiveFailures = 0;
 
         let everLoaded = false;      // have we ever had a good response?
-        let pendingSaves = {};       // saves the sheet has not echoed back yet
         let pollTimer = null;
         let activeUntil = 0;
 
@@ -1271,19 +1223,6 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
         function markActive() {
             activeUntil = Date.now() + ACTIVE_WINDOW;
             schedulePoll();
-        }
-
-        // A save is shown immediately and kept on screen until the sheet
-        // confirms it, so a slow round-trip never makes a record vanish.
-        function applyPending() {
-            const now = Date.now();
-            Object.keys(pendingSaves).forEach(num => {
-                if (now - pendingSaves[num].at > PENDING_TTL) {
-                    delete pendingSaves[num];
-                } else {
-                    interventions[num] = pendingSaves[num].data;
-                }
-            });
         }
 
         async function loadData(manual, attempt) {
@@ -1343,39 +1282,19 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
                 everLoaded = true;
                 consecutiveFailures = 0;
 
-                // Merge, never replace. A row the sheet stops returning stays
-                // on screen (flagged) instead of vanishing.
-                const fromSheet = {};
-                (result.rows || []).forEach(row => {
-                    if (row.intervention) fromSheet[String(row.intervention)] = row;
-                });
-
-                const previous = Object.assign({}, loadStore(STORE_KEY), interventions);
-                localOnly = {};
+                // The sheet is the only source of truth. Nothing is cached in
+                // this browser, so what is on screen is what Google last stored.
                 interventions = {};
-
-                Object.keys(previous).forEach(k => {
-                    if (!fromSheet[k]) {
-                        interventions[k] = previous[k];   // keep what we already had
-                        localOnly[k] = true;
-                    }
+                (result.rows || []).forEach(row => {
+                    if (row.intervention) interventions[String(row.intervention)] = row;
                 });
-                Object.keys(fromSheet).forEach(k => { interventions[k] = fromSheet[k]; });
-
-                applyPending();
-                saveStore(STORE_KEY, interventions);
 
                 lastSync = new Date();
                 const n = Object.keys(interventions).length;
-                const nLocal = Object.keys(localOnly).length;
-                let msg = n + ' of ' + PARTNERS.length + ' interventions saved · last updated ' +
+                let msg = n + ' of ' + PARTNERS.length + ' interventions saved · read from the sheet at ' +
                           lastSync.toLocaleTimeString() +
                           ' · sheet returned ' + (result.rows || []).length +
                           ' of ' + (result.sheetRows === undefined ? '?' : result.sheetRows) + ' data rows';
-                if (nLocal) {
-                    msg += ' · ⚠️ ' + nLocal + ' shown from this browser only (the sheet did not return ' +
-                           (nLocal === 1 ? 'it' : 'them') + ')';
-                }
                 if (result.skipped) {
                     msg += ' · ' + result.skipped + ' sheet row(s) have no intervention number and were ignored';
                 }
@@ -1407,54 +1326,6 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
             }
         }
 
-
-        /* ---------- typed-but-unsaved drafts ----------
-           Nothing a partner has typed should be lost to a reload, a crash or a
-           background refresh, so every keystroke is mirrored locally. */
-        function saveDraft(form) {
-            const num = form.getAttribute('data-intervention');
-            if (num === '0') return;
-            const values = {};
-            let any = false;
-            FIELDS.forEach(f => {
-                const el = form.querySelector('[name="' + f.id + '"]');
-                if (el && el.value) { values[f.id] = el.value; any = true; }
-            });
-            const drafts = loadStore(DRAFT_KEY);
-            if (any) drafts[num] = { values: values, at: Date.now() };
-            else delete drafts[num];
-            saveStore(DRAFT_KEY, drafts);
-        }
-
-        function clearDraft(num) {
-            const drafts = loadStore(DRAFT_KEY);
-            delete drafts[String(num)];
-            saveStore(DRAFT_KEY, drafts);
-        }
-
-        function restoreDrafts() {
-            const drafts = loadStore(DRAFT_KEY);
-            let restored = 0;
-            Object.keys(drafts).forEach(num => {
-                const form = document.querySelector('form[data-intervention="' + num + '"]');
-                if (!form) return;
-                const d = drafts[num] || {};
-                FIELDS.forEach(f => {
-                    const el = form.querySelector('[name="' + f.id + '"]');
-                    if (el && d.values && d.values[f.id] !== undefined) el.value = d.values[f.id];
-                });
-                // mark it as being edited so a poll does not overwrite it
-                form.dataset.dirty = '1';
-                const group = document.querySelector('.intervention-group[data-intervention="' + num + '"]');
-                if (group) {
-                    const progress = group.querySelector('.progress');
-                    if (progress) progress.innerHTML =
-                        '<span class="status-indicator empty"></span>Unsaved draft';
-                }
-                restored++;
-            });
-            return restored;
-        }
 
         function markSaved(num) {
             const group = document.querySelector('.intervention-group[data-intervention="' + num + '"]');
@@ -1535,7 +1406,7 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
                 const summary = String(item.interventionDescription || '');
                 html += `
                     <div class="card" style="border-left-color: ${color}" onclick="showModal('${esc(item.intervention)}')">
-                        <div class="partner-tag">${flagFor(item.partner)}${esc(item.partner)}</div>${localOnly[String(item.intervention)] ? '<span class="local-only">this browser only</span>' : ''}
+                        <div class="partner-tag">${flagFor(item.partner)}${esc(item.partner)}</div>
                         <h3>Intervention #${esc(item.intervention)}</h3>
                         <div class="card-field">
                             <div class="card-label">Intervention Description</div>
@@ -1612,43 +1483,9 @@ Teachers reported the same gap in the 2025 needs analysis.</textarea>
 
         // Mark a form as "being edited" so a background refresh never
         // overwrites what someone is typing.
-        let draftTimer = null;
         document.querySelectorAll('form[data-intervention]').forEach(form => {
-            form.addEventListener('input', () => {
-                form.dataset.dirty = '1';
-                clearTimeout(draftTimer);
-                draftTimer = setTimeout(() => saveDraft(form), 400);
-            });
+            form.addEventListener('input', () => { form.dataset.dirty = '1'; });
         });
-
-        // Show whatever this browser already knows before the first poll answers,
-        // so the page is never blank while waiting on Google.
-        interventions = loadStore(STORE_KEY);
-        // Stored rows prove this browser has reached the endpoint before, so a
-        // failure now is a hiccup, not a wrong deployment - say the right thing.
-        if (Object.keys(interventions).length) everLoaded = true;
-        Object.keys(interventions).forEach(markSaved);
-        prefillForms();
-        renderDashboard();
-        // Reopen whatever was open when the page was last used.
-        let reopened = null;
-        try { reopened = localStorage.getItem(OPEN_KEY); } catch (e) { /* ignore */ }
-        if (reopened) {
-            const group = document.querySelector(
-                '.intervention-group[data-intervention="' + reopened + '"]');
-            if (group) {
-                group.classList.add('active');
-                alignPanesSoon();
-                setTimeout(() => group.scrollIntoView({ block: 'start' }), 120);
-            }
-        }
-
-        const restoredDrafts = restoreDrafts();
-        if (restoredDrafts) {
-            document.getElementById('syncStatus').textContent =
-                '📝 ' + restoredDrafts + ' unsaved draft' + (restoredDrafts === 1 ? '' : 's') +
-                ' restored from this browser. Loading the sheet…';
-        }
 
         loadData();   // schedulePoll() keeps it going from here
 
